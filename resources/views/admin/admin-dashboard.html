@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suit Yourself | Admin Dashboard</title>
+
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+<style>
+  :root{
+    --bg:#f0e6ff;
+    --primary:#5a3c78;
+    --primary-dark:#43305e;
+    --primary-light:#8a63b5;
+    --accent:#c9a45c;
+    --white:#ffffff;
+    --text-dark:#2d2438;
+    --text-muted:#8d7fa3;
+    --border-soft:#ece1fb;
+    --success:#3fae7e;       --success-bg:rgba(63,174,126,.12);
+    --info:#4f8fd1;          --info-bg:rgba(79,143,209,.12);
+    --warning:#c9a45c;       --warning-bg:rgba(201,164,92,.15);
+    --danger:#d9636c;        --danger-bg:rgba(217,99,108,.12);
+    --shadow:0 8px 24px rgba(90,60,120,.08);
+    --shadow-hover:0 14px 34px rgba(90,60,120,.16);
+    --radius:16px;
+    --sidebar-w:272px;
+  }
+
+  *{box-sizing:border-box;}
+
+  html,body{height:100%;}
+  body{
+    font-family:'Poppins', sans-serif;
+    background-color:var(--bg);
+    color:var(--text-dark);
+    font-size:.95rem;
+  }
+
+  h1,h2,h3,h4,h5,.brand-text{font-family:'Playfair Display',serif;}
+
+  a:focus-visible, button:focus-visible, input:focus-visible{
+    outline:2px solid var(--accent);
+    outline-offset:2px;
+  }
+
+  /* ===================== SIDEBAR ===================== */
+  .sidebar{
+    position:fixed;
+    top:0; left:0;
+    height:100vh;
+    width:var(--sidebar-w);
+    background:linear-gradient(195deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color:#f4ecff;
+    display:flex;
+    flex-direction:column;
+    padding:1.75rem 1.25rem;
+    z-index:1045;
+    transition:transform .3s ease;
+    overflow-y:auto;
+  }
+  .sidebar-brand{
+    display:flex; align-items:center; gap:.65rem;
+    padding:0 .35rem 1.4rem;
+    margin-bottom:.75rem;
+    border-bottom:1px dashed rgba(255,255,255,.18);
+  }
+  .sidebar-brand .brand-icon{font-size:1.65rem; color:var(--accent);}
+  .brand-text{font-size:1.4rem; font-weight:700; letter-spacing:.5px; color:#fff; line-height:1.1;}
+  .brand-text em{color:var(--accent); font-style:italic; font-weight:600;}
+  .brand-sub{font-size:.68rem; letter-spacing:.18em; color:rgba(244,236,255,.55); text-transform:uppercase; margin-top:.15rem;}
+
+  .sidebar-nav{display:flex; flex-direction:column; gap:.2rem; flex:1;}
+  .nav-section-label{
+    font-size:.68rem; letter-spacing:.16em; text-transform:uppercase;
+    color:rgba(244,236,255,.4); margin:1rem 0 .4rem .9rem;
+  }
+  .sidebar-nav .nav-link{
+    display:flex; align-items:center; gap:.85rem;
+    color:rgba(244,236,255,.78);
+    padding:.68rem .9rem;
+    border-radius:10px;
+    font-weight:500; font-size:.92rem;
+    text-decoration:none;
+    border-left:3px solid transparent;
+    transition:all .25s ease;
+  }
+  .sidebar-nav .nav-link i{font-size:1.05rem; width:20px; text-align:center;}
+  .sidebar-nav .nav-link:hover{
+    background:rgba(255,255,255,.08);
+    color:#fff;
+    transform:translateX(3px);
+  }
+  .sidebar-nav .nav-link.active{
+    background:rgba(255,255,255,.12);
+    color:#fff;
+    border-left-color:var(--accent);
+    font-weight:600;
+  }
+  .sidebar-nav .nav-link .badge{
+    margin-left:auto; background:var(--accent); color:var(--primary-dark);
+    font-size:.66rem; font-weight:700;
+  }
+
+  .sidebar-footer{margin-top:.75rem;}
+  .seam-divider-vert{border-top:1px dashed rgba(255,255,255,.18); margin:.5rem 0 .75rem;}
+  .nav-link.logout{color:#ffd6d6;}
+  .nav-link.logout:hover{background:rgba(217,99,108,.18); color:#fff;}
+
+  /* Overlay for mobile sidebar */
+  .sidebar-overlay{
+    position:fixed; inset:0; background:rgba(45,36,56,.45);
+    z-index:1040; opacity:0; visibility:hidden; transition:all .3s ease;
+  }
+  .sidebar-overlay.show{opacity:1; visibility:visible;}
+
+  /* ===================== MAIN WRAPPER ===================== */
+  .main-wrapper{
+    margin-left:var(--sidebar-w);
+    min-height:100vh;
+    display:flex; flex-direction:column;
+    transition:margin-left .3s ease;
+  }
+
+  /* ===================== TOPBAR ===================== */
+  .topbar{
+    position:sticky; top:0; z-index:1030;
+    background:#fff;
+    box-shadow:var(--shadow);
+    display:flex; align-items:center; gap:1rem;
+    padding:.85rem 1.5rem;
+  }
+  .btn-toggle{
+    border:none; background:var(--bg); color:var(--primary);
+    width:42px; height:42px; border-radius:10px; font-size:1.25rem; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    transition:all .2s ease;
+  }
+  .btn-toggle:hover{background:var(--primary); color:#fff;}
+
+  .search-box{
+    flex:1; min-width:0; max-width:420px;
+    display:flex; align-items:center; gap:.6rem;
+    background:var(--bg);
+    border-radius:12px; padding:.55rem 1rem;
+    transition:box-shadow .2s ease;
+  }
+  .search-box i{color:var(--text-muted);}
+  .search-box input{
+    border:none; background:transparent; outline:none; width:100%;
+    font-family:'Poppins',sans-serif; font-size:.9rem; color:var(--text-dark);
+  }
+  .search-box:focus-within{box-shadow:0 0 0 3px rgba(90,60,120,.12);}
+
+  .topbar-right{display:flex; align-items:center; gap:.85rem; margin-left:auto;}
+  .icon-btn{
+    position:relative; border:none; background:var(--bg);
+    width:42px; height:42px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--primary); font-size:1.1rem; transition:all .2s ease;
+  }
+  .icon-btn:hover{background:var(--primary); color:#fff;}
+  .notif-dot{
+    position:absolute; top:8px; right:9px; width:9px; height:9px;
+    background:var(--danger); border-radius:50%; border:2px solid #fff;
+  }
+
+  .profile-btn{
+    display:flex; align-items:center; gap:.6rem; border:none; background:transparent;
+    padding:.3rem .6rem .3rem .3rem; border-radius:12px; transition:background .2s ease;
+  }
+  .profile-btn:hover{background:var(--bg);}
+  .avatar{
+    width:42px; height:42px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg, var(--primary), var(--primary-light));
+    color:#fff; display:flex; align-items:center; justify-content:center;
+    font-weight:600; font-size:.85rem;
+  }
+  .profile-text{text-align:left; line-height:1.15;}
+  .profile-name{font-weight:600; font-size:.86rem; color:var(--text-dark); display:block;}
+  .profile-role{font-size:.72rem; color:var(--text-muted);}
+
+  /* Dropdowns */
+  .dropdown-menu{border:none; box-shadow:var(--shadow-hover); border-radius:12px; padding:.5rem;}
+  .dropdown-menu .dropdown-item{border-radius:8px; padding:.55rem .9rem; font-size:.86rem; transition:all .2s ease;}
+  .dropdown-menu .dropdown-item:hover{background:var(--bg); color:var(--primary);}
+  .dropdown-menu .dropdown-header{font-weight:700; color:var(--primary-dark); font-family:'Playfair Display',serif; font-size:.95rem;}
+  .notif-menu{width:330px;}
+  .notif-item{display:flex; gap:.7rem; align-items:flex-start; white-space:normal;}
+  .notif-item .ni-icon{
+    width:34px; height:34px; border-radius:50%; flex-shrink:0; color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:.85rem;
+  }
+  .notif-item .ni-text{font-size:.82rem; line-height:1.35;}
+  .notif-item .ni-time{font-size:.7rem; color:var(--text-muted);}
+
+  /* ===================== CONTENT ===================== */
+  .content{padding:1.75rem; flex:1;}
+  .page-header{margin-bottom:1.75rem; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:.5rem;}
+  .page-header h1{font-size:1.8rem; font-weight:700; color:var(--primary-dark); margin-bottom:.2rem;}
+  .page-header p{color:var(--text-muted); margin:0; font-size:.9rem;}
+  .page-date{
+    font-size:.8rem; color:var(--primary); background:#fff; border-radius:30px;
+    padding:.5rem 1.1rem; box-shadow:var(--shadow); font-weight:500;
+    display:flex; align-items:center; gap:.5rem;
+  }
+
+  /* ===================== SEAM DIVIDER (signature element) ===================== */
+  .seam-divider{position:relative; height:0; border-top:2px dashed var(--accent); opacity:.5; margin:2.25rem 0;}
+  .seam-divider i{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(0deg);
+    background:var(--bg); color:var(--accent); font-size:1.05rem; padding:0 .9rem;
+  }
+
+  /* ===================== CARDS ===================== */
+  .card{border:none; border-radius:var(--radius); box-shadow:var(--shadow); transition:box-shadow .3s ease;}
+  .card:hover{box-shadow:var(--shadow-hover);}
+  .card-header{
+    background:#fff; border-bottom:1px solid var(--border-soft);
+    border-radius:var(--radius) var(--radius) 0 0 !important;
+    padding:1.1rem 1.4rem; display:flex; align-items:center; justify-content:space-between; gap:.75rem; flex-wrap:wrap;
+  }
+  .card-header h5{margin:0; font-weight:700; color:var(--primary-dark); font-size:1.08rem;}
+  .card-body{padding:1.4rem;}
+  .link-view-all{font-size:.82rem; font-weight:600; color:var(--primary); text-decoration:none; white-space:nowrap;}
+  .link-view-all:hover{color:var(--accent);}
+
+  /* ===================== STAT CARDS ===================== */
+  .stat-card{
+    background:#fff; border-radius:var(--radius); padding:1.35rem;
+    box-shadow:var(--shadow); transition:all .3s ease;
+    display:flex; align-items:center; gap:1rem; height:100%;
+    border:1px solid transparent;
+  }
+  .stat-card:hover{transform:translateY(-4px); box-shadow:var(--shadow-hover); border-color:var(--border-soft);}
+  .stat-icon{
+    width:54px; height:54px; border-radius:14px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:1.5rem; color:#fff;
+  }
+  .stat-icon.purple{background:linear-gradient(135deg, var(--primary), var(--primary-light));}
+  .stat-icon.gold{background:linear-gradient(135deg, var(--accent), #e6cd9a);}
+  .stat-icon.green{background:linear-gradient(135deg, var(--success), #76dba8);}
+  .stat-icon.blue{background:linear-gradient(135deg, var(--info), #93c8f2);}
+
+  .stat-label{font-size:.8rem; color:var(--text-muted); margin-bottom:.15rem;}
+  .stat-value{font-family:'Playfair Display',serif; font-size:1.65rem; font-weight:700; color:var(--text-dark); line-height:1.2;}
+  .stat-trend{font-size:.74rem; font-weight:600; margin-top:.25rem;}
+  .stat-trend.up{color:var(--success);}
+  .stat-trend.down{color:var(--danger);}
+  .stat-trend.neutral{color:var(--text-muted);}
+
+  /* ===================== CHARTS ===================== */
+  .chart-wrap{position:relative; height:300px;}
+
+  /* ===================== TABLES ===================== */
+  .table{margin-bottom:0;}
+  .table thead th{
+    font-size:.72rem; text-transform:uppercase; letter-spacing:.06em;
+    color:var(--text-muted); border-bottom:2px solid var(--border-soft);
+    font-weight:600; padding:.9rem 1rem; white-space:nowrap;
+  }
+  .table tbody td{padding:.9rem 1rem; vertical-align:middle; border-bottom:1px solid var(--border-soft); font-size:.87rem;}
+  .table tbody tr{transition:background .2s ease;}
+  .table tbody tr:hover{background:var(--bg);}
+  .table tbody tr:last-child td{border-bottom:none;}
+  .table thead th:first-child, .table tbody td:first-child{padding-left:1.4rem;}
+  .table thead th:last-child, .table tbody td:last-child{padding-right:1.4rem;}
+
+  .customer-cell{display:flex; align-items:center; gap:.7rem;}
+  .customer-avatar{
+    width:36px; height:36px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg, var(--primary-light), var(--primary));
+    color:#fff; display:flex; align-items:center; justify-content:center; font-size:.74rem; font-weight:600;
+  }
+  .customer-cell .c-name{font-weight:600; color:var(--text-dark); display:block;}
+  .customer-cell .c-sub{font-size:.76rem; color:var(--text-muted);}
+
+  .order-id{font-weight:600; color:var(--primary-dark);}
+
+  .badge-status{font-weight:600; font-size:.73rem; padding:.42em .85em; border-radius:20px; display:inline-block;}
+  .badge-completed{background:var(--success-bg); color:var(--success);}
+  .badge-processing{background:var(--info-bg); color:var(--info);}
+  .badge-pending{background:var(--warning-bg); color:#a8823f;}
+  .badge-cancelled{background:var(--danger-bg); color:var(--danger);}
+
+  .action-btn{
+    width:32px; height:32px; border-radius:8px; border:none;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:var(--bg); color:var(--primary); font-size:.85rem; margin-right:.3rem;
+    transition:all .2s ease;
+  }
+  .action-btn:hover{background:var(--primary); color:#fff; transform:translateY(-2px);}
+  .action-btn.delete:hover{background:var(--danger);}
+
+  /* ===================== ACTIVITY ===================== */
+  .activity-list{list-style:none; padding:0; margin:0;}
+  .activity-item{display:flex; gap:.9rem; padding:.85rem 0; border-bottom:1px dashed var(--border-soft);}
+  .activity-item:first-child{padding-top:0;}
+  .activity-item:last-child{border-bottom:none; padding-bottom:0;}
+  .activity-icon{
+    width:40px; height:40px; border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; font-size:1rem; color:#fff;
+  }
+  .activity-icon.reg{background:linear-gradient(135deg, var(--info), #93c8f2);}
+  .activity-icon.order{background:linear-gradient(135deg, var(--accent), #e6cd9a);}
+  .activity-icon.done{background:linear-gradient(135deg, var(--success), #76dba8);}
+  .activity-text{font-size:.86rem; color:var(--text-dark); line-height:1.4;}
+  .activity-time{font-size:.74rem; color:var(--text-muted);}
+
+  /* ===================== FOOTER ===================== */
+  .footer{
+    background:#fff; border-top:1px solid var(--border-soft);
+    padding:1.25rem 1.75rem; text-align:center; font-size:.85rem; color:var(--text-muted);
+  }
+  .footer a{color:var(--primary); text-decoration:none; font-weight:500; margin:0 .4rem;}
+  .footer a:hover{color:var(--accent);}
+
+  /* ===================== RESPONSIVE ===================== */
+  @media (max-width:991.98px){
+    .sidebar{transform:translateX(-100%);}
+    .sidebar.show{transform:translateX(0);}
+    .main-wrapper{margin-left:0;}
+  }
+  @media (max-width:575.98px){
+    .content{padding:1.1rem;}
+    .topbar{padding:.75rem 1rem;}
+    .profile-text{display:none;}
+    .page-date{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="d-flex">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <i class="bi bi-scissors brand-icon"></i>
+      <div>
+        <div class="brand-text">Suit <em>Yourself</em></div>
+        <div class="brand-sub">Admin Panel</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-link active"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a>
+      <a href="#" class="nav-link"><i class="bi bi-people-fill"></i><span>Users</span></a>
+      <a href="#" class="nav-link"><i class="bi bi-bag-check-fill"></i><span>Orders</span></a>
+      <a href="#" class="nav-link"><i class="bi bi-rulers"></i><span>Measurements</span></a>
+      <a href="#" class="nav-link"><i class="bi bi-box-seam-fill"></i><span>Products</span></a>
+      <a href="#" class="nav-link"><i class="bi bi-calendar2-check-fill"></i><span>Appointments</span></a>
+      <a href="#" class="nav-link"><i class="bi bi-chat-left-text-fill"></i><span>Messages</span><span class="badge rounded-pill">3</span></a>
+      <a href="#" class="nav-link"><i class="bi bi-gear-fill"></i><span>Settings</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="seam-divider-vert"></div>
+      <a href="#" class="nav-link logout"><i class="bi bi-box-arrow-right"></i><span>Logout</span></a>
+    </div>
+  </aside>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ===================== MAIN WRAPPER ===================== -->
+  <div class="main-wrapper">
+
+    <!-- ===================== TOP NAVBAR ===================== -->
+    <header class="topbar">
+      <button class="btn-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <i class="bi bi-list"></i>
+      </button>
+
+      <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" id="globalSearch" placeholder="Search orders, customers, products...">
+      </div>
+
+      <div class="topbar-right">
+
+        <!-- Notifications -->
+        <div class="dropdown">
+          <button class="icon-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+            <i class="bi bi-bell-fill"></i>
+            <span class="notif-dot"></span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end notif-menu">
+            <li><h6 class="dropdown-header">Notifications</h6></li>
+            <li>
+              <a class="dropdown-item notif-item" href="#">
+                <span class="ni-icon" style="background:linear-gradient(135deg,var(--info),#93c8f2);"><i class="bi bi-person-plus-fill"></i></span>
+                <span class="ni-text">New customer <strong>Ayesha Tariq</strong> just registered<br><span class="ni-time">10 minutes ago</span></span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item notif-item" href="#">
+                <span class="ni-icon" style="background:linear-gradient(135deg,var(--accent),#e6cd9a);"><i class="bi bi-bag-check-fill"></i></span>
+                <span class="ni-text">New order <strong>#ORD-1042</strong> placed by Ahmed Khan<br><span class="ni-time">1 hour ago</span></span>
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item notif-item" href="#">
+                <span class="ni-icon" style="background:linear-gradient(135deg,var(--success),#76dba8);"><i class="bi bi-check2-circle"></i></span>
+                <span class="ni-text">Order <strong>#ORD-1039</strong> marked as completed<br><span class="ni-time">3 hours ago</span></span>
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-center fw-semibold" href="#" style="color:var(--primary);">View all notifications</a></li>
+          </ul>
+        </div>
+
+        <!-- Profile -->
+        <div class="dropdown">
+          <button class="profile-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="avatar">AD</span>
+            <span class="profile-text">
+              <span class="profile-name">Admin User</span>
+              <span class="profile-role">Super Admin</span>
+            </span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><h6 class="dropdown-header">Admin User</h6></li>
+            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>My Profile</a></li>
+            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Account Settings</a></li>
+            <li><a class="dropdown-item" href="#"><i class="bi bi-question-circle me-2"></i>Help &amp; Support</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          </ul>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- ===================== MAIN CONTENT ===================== -->
+    <main class="content">
+
+      <div class="page-header">
+        <div>
+          <h1>Dashboard Overview</h1>
+          <p>Welcome back, Admin — here's what's happening at Suit Yourself today.</p>
+        </div>
+        <div class="page-date"><i class="bi bi-calendar3"></i><span id="todayDate"></span></div>
+      </div>
+
+      <!-- ===================== STAT CARDS ===================== -->
+      <div class="row g-3 g-lg-4">
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon purple"><i class="bi bi-people-fill"></i></div>
+            <div>
+              <div class="stat-label">Total Users</div>
+              <div class="stat-value">1,248</div>
+              <div class="stat-trend up"><i class="bi bi-arrow-up-short"></i>8.2% this month</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon gold"><i class="bi bi-bag-check-fill"></i></div>
+            <div>
+              <div class="stat-label">Total Orders</div>
+              <div class="stat-value">856</div>
+              <div class="stat-trend up"><i class="bi bi-arrow-up-short"></i>12.5% this month</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon green"><i class="bi bi-cash-coin"></i></div>
+            <div>
+              <div class="stat-label">Total Revenue</div>
+              <div class="stat-value">$128,450</div>
+              <div class="stat-trend up"><i class="bi bi-arrow-up-short"></i>5.4% this month</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="bi bi-hourglass-split"></i></div>
+            <div>
+              <div class="stat-label">Pending Orders</div>
+              <div class="stat-value">34</div>
+              <div class="stat-trend neutral"><i class="bi bi-dot"></i>Needs attention</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="seam-divider"><i class="bi bi-scissors"></i></div>
+
+      <!-- ===================== CHARTS ===================== -->
+      <div class="row g-3 g-lg-4">
+        <div class="col-xl-8">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5><i class="bi bi-graph-up-arrow me-2"></i>Monthly Sales</h5>
+              <span class="link-view-all">Jan – Jun 2026</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-xl-4">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5><i class="bi bi-person-up me-2"></i>User Growth</h5>
+              <span class="link-view-all">New signups</span>
+            </div>
+            <div class="card-body">
+              <div class="chart-wrap"><canvas id="growthChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="seam-divider"><i class="bi bi-scissors"></i></div>
+
+      <!-- ===================== RECENT ORDERS ===================== -->
+      <div class="card">
+        <div class="card-header">
+          <h5><i class="bi bi-receipt-cutoff me-2"></i>Recent Orders</h5>
+          <a href="#" class="link-view-all">View All Orders <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Product</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableBody">
+                <tr>
+                  <td class="order-id">#ORD-1042</td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-avatar">AK</span>
+                      <span class="c-name">Ahmed Khan</span>
+                    </div>
+                  </td>
+                  <td>Custom Three-Piece Suit</td>
+                  <td>$450.00</td>
+                  <td><span class="badge-status badge-completed">Completed</span></td>
+                  <td>Jun 12, 2026</td>
+                  <td class="text-end">
+                    <button class="action-btn" aria-label="View order"><i class="bi bi-eye"></i></button>
+                    <button class="action-btn" aria-label="Edit order"><i class="bi bi-pencil"></i></button>
+                    <button class="action-btn delete" aria-label="Delete order"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="order-id">#ORD-1041</td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-avatar">SM</span>
+                      <span class="c-name">Sarah Malik</span>
+                    </div>
+                  </td>
+                  <td>Tailored Blazer</td>
+                  <td>$220.00</td>
+                  <td><span class="badge-status badge-processing">Processing</span></td>
+                  <td>Jun 12, 2026</td>
+                  <td class="text-end">
+                    <button class="action-btn" aria-label="View order"><i class="bi bi-eye"></i></button>
+                    <button class="action-btn" aria-label="Edit order"><i class="bi bi-pencil"></i></button>
+                    <button class="action-btn delete" aria-label="Delete order"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="order-id">#ORD-1040</td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-avatar">BA</span>
+                      <span class="c-name">Bilal Ahmed</span>
+                    </div>
+                  </td>
+                  <td>Wedding Sherwani</td>
+                  <td>$680.00</td>
+                  <td><span class="badge-status badge-pending">Pending</span></td>
+                  <td>Jun 11, 2026</td>
+                  <td class="text-end">
+                    <button class="action-btn" aria-label="View order"><i class="bi bi-eye"></i></button>
+                    <button class="action-btn" aria-label="Edit order"><i class="bi bi-pencil"></i></button>
+                    <button class="action-btn delete" aria-label="Delete order"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="order-id">#ORD-1039</td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-avatar">FN</span>
+                      <span class="c-name">Fatima Noor</span>
+                    </div>
+                  </td>
+                  <td>Formal Trousers (2 pcs)</td>
+                  <td>$120.00</td>
+                  <td><span class="badge-status badge-completed">Completed</span></td>
+                  <td>Jun 10, 2026</td>
+                  <td class="text-end">
+                    <button class="action-btn" aria-label="View order"><i class="bi bi-eye"></i></button>
+                    <button class="action-btn" aria-label="Edit order"><i class="bi bi-pencil"></i></button>
+                    <button class="action-btn delete" aria-label="Delete order"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="order-id">#ORD-1038</td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-avatar">HR</span>
+                      <span class="c-name">Hassan Raza</span>
+                    </div>
+                  </td>
+                  <td>Tuxedo Set</td>
+                  <td>$750.00</td>
+                  <td><span class="badge-status badge-cancelled">Cancelled</span></td>
+                  <td>Jun 9, 2026</td>
+                  <td class="text-end">
+                    <button class="action-btn" aria-label="View order"><i class="bi bi-eye"></i></button>
+                    <button class="action-btn" aria-label="Edit order"><i class="bi bi-pencil"></i></button>
+                    <button class="action-btn delete" aria-label="Delete order"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="order-id">#ORD-1037</td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-avatar">AT</span>
+                      <span class="c-name">Ayesha Tariq</span>
+                    </div>
+                  </td>
+                  <td>Casual Shirt (3 pcs)</td>
+                  <td>$90.00</td>
+                  <td><span class="badge-status badge-completed">Completed</span></td>
+                  <td>Jun 9, 2026</td>
+                  <td class="text-end">
+                    <button class="action-btn" aria-label="View order"><i class="bi bi-eye"></i></button>
+                    <button class="action-btn" aria-label="Edit order"><i class="bi bi-pencil"></i></button>
+                    <button class="action-btn delete" aria-label="Delete order"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="order-id">#ORD-1036</td>
+                  <td>
+                    <div class="customer-cell">
+                      <span class="customer-avatar">US</span>
+                      <span class="c-name">Usman Sheikh</span>
+                    </div>
+                  </td>
+                  <td>Custom Vest</td>
+                  <td>$150.00</td>
+                  <td><span class="badge-status badge-processing">Processing</span></td>
+                  <td>Jun 8, 2026</td>
+                  <td class="text-end">
+                    <button class="action-btn" aria-label="View order"><i class="bi bi-eye"></i></button>
+                    <button class="action-btn" aria-label="Edit order"><i class="bi bi-pencil"></i></button>
+                    <button class="action-btn delete" aria-label="Delete order"><i class="bi bi-trash"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===================== RECENT USERS + ACTIVITY ===================== -->
+      <div class="row g-3 g-lg-4 mt-3 mt-lg-4">
+        <div class="col-lg-7">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5><i class="bi bi-person-lines-fill me-2"></i>Recent Users</h5>
+              <a href="#" class="link-view-all">View All Users <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="card-body p-0">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Registered</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <div class="customer-cell">
+                          <span class="customer-avatar">AK</span>
+                          <span class="c-name">Ahmed Khan</span>
+                        </div>
+                      </td>
+                      <td>ahmed.khan@example.com</td>
+                      <td>+92 300 1234567</td>
+                      <td>Jun 12, 2026</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="customer-cell">
+                          <span class="customer-avatar">SM</span>
+                          <span class="c-name">Sarah Malik</span>
+                        </div>
+                      </td>
+                      <td>sarah.malik@example.com</td>
+                      <td>+92 321 9876543</td>
+                      <td>Jun 11, 2026</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="customer-cell">
+                          <span class="customer-avatar">BA</span>
+                          <span class="c-name">Bilal Ahmed</span>
+                        </div>
+                      </td>
+                      <td>bilal.ahmed@example.com</td>
+                      <td>+92 333 4567890</td>
+                      <td>Jun 10, 2026</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="customer-cell">
+                          <span class="customer-avatar">FN</span>
+                          <span class="c-name">Fatima Noor</span>
+                        </div>
+                      </td>
+                      <td>fatima.noor@example.com</td>
+                      <td>+92 345 1122334</td>
+                      <td>Jun 9, 2026</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <div class="customer-cell">
+                          <span class="customer-avatar">HR</span>
+                          <span class="c-name">Hassan Raza</span>
+                        </div>
+                      </td>
+                      <td>hassan.raza@example.com</td>
+                      <td>+92 312 5566778</td>
+                      <td>Jun 8, 2026</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card h-100">
+            <div class="card-header">
+              <h5><i class="bi bi-activity me-2"></i>Latest Activity</h5>
+            </div>
+            <div class="card-body">
+              <ul class="activity-list">
+                <li class="activity-item">
+                  <span class="activity-icon reg"><i class="bi bi-person-plus-fill"></i></span>
+                  <div class="activity-text">
+                    New registration — <strong>Ayesha Tariq</strong> created an account
+                    <div class="activity-time">10 minutes ago</div>
+                  </div>
+                </li>
+                <li class="activity-item">
+                  <span class="activity-icon order"><i class="bi bi-bag-plus-fill"></i></span>
+                  <div class="activity-text">
+                    New order — <strong>#ORD-1042</strong> by Ahmed Khan (Three-Piece Suit)
+                    <div class="activity-time">1 hour ago</div>
+                  </div>
+                </li>
+                <li class="activity-item">
+                  <span class="activity-icon done"><i class="bi bi-check2-circle"></i></span>
+                  <div class="activity-text">
+                    Order completed — <strong>#ORD-1039</strong> marked as completed
+                    <div class="activity-time">3 hours ago</div>
+                  </div>
+                </li>
+                <li class="activity-item">
+                  <span class="activity-icon reg"><i class="bi bi-person-plus-fill"></i></span>
+                  <div class="activity-text">
+                    New registration — <strong>Usman Sheikh</strong> created an account
+                    <div class="activity-time">5 hours ago</div>
+                  </div>
+                </li>
+                <li class="activity-item">
+                  <span class="activity-icon order"><i class="bi bi-bag-plus-fill"></i></span>
+                  <div class="activity-text">
+                    New order — <strong>#ORD-1041</strong> by Sarah Malik (Tailored Blazer)
+                    <div class="activity-time">Yesterday</div>
+                  </div>
+                </li>
+                <li class="activity-item">
+                  <span class="activity-icon done"><i class="bi bi-check2-circle"></i></span>
+                  <div class="activity-text">
+                    Order completed — <strong>#ORD-1037</strong> marked as completed
+                    <div class="activity-time">Yesterday</div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- ===================== FOOTER ===================== -->
+    <footer class="footer">
+      <div>© 2026 <strong>Suit Yourself</strong>. All rights reserved.</div>
+      <div class="mt-1">
+        <a href="#">Privacy Policy</a>·<a href="#">Terms of Service</a>·<a href="#">Support</a>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // ===================== SIDEBAR TOGGLE (MOBILE) =====================
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const toggleBtn = document.getElementById('sidebarToggle');
+
+  function toggleSidebar(){
+    sidebar.classList.toggle('show');
+    overlay.classList.toggle('show');
+  }
+  toggleBtn.addEventListener('click', toggleSidebar);
+  overlay.addEventListener('click', toggleSidebar);
+
+  // ===================== SIDEBAR NAV ACTIVE STATE =====================
+  document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      document.querySelectorAll('.sidebar-nav .nav-link').forEach(l => l.classList.remove('active'));
+      this.classList.add('active');
+      if (window.innerWidth < 992){
+        sidebar.classList.remove('show');
+        overlay.classList.remove('show');
+      }
+    });
+  });
+  document.querySelector('.nav-link.logout').addEventListener('click', function(e){
+    e.preventDefault();
+    if (window.innerWidth < 992){
+      sidebar.classList.remove('show');
+      overlay.classList.remove('show');
+    }
+  });
+
+  // ===================== TODAY'S DATE =====================
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  // ===================== LIVE SEARCH (RECENT ORDERS) =====================
+  document.getElementById('globalSearch').addEventListener('input', function(){
+    const term = this.value.trim().toLowerCase();
+    document.querySelectorAll('#ordersTableBody tr').forEach(row => {
+      row.style.display = row.textContent.toLowerCase().includes(term) ? '' : 'none';
+    });
+  });
+
+  // ===================== CHARTS =====================
+  Chart.defaults.font.family = "'Poppins', sans-serif";
+  Chart.defaults.color = '#8d7fa3';
+
+  // Monthly Sales Chart
+  const salesCanvas = document.getElementById('salesChart');
+  const salesCtx = salesCanvas.getContext('2d');
+  const salesGradient = salesCtx.createLinearGradient(0, 0, 0, 300);
+  salesGradient.addColorStop(0, 'rgba(90, 60, 120, 0.35)');
+  salesGradient.addColorStop(1, 'rgba(90, 60, 120, 0)');
+
+  new Chart(salesCanvas, {
+    type: 'line',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [{
+        label: 'Revenue',
+        data: [45000, 52400, 48900, 61200, 58700, 73450],
+        borderColor: '#5a3c78',
+        backgroundColor: salesGradient,
+        borderWidth: 3,
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#c9a45c',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#5a3c78',
+          padding: 12,
+          cornerRadius: 8,
+          callbacks: {
+            label: ctx => '  Revenue: $' + ctx.parsed.y.toLocaleString()
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: '#ece1fb' },
+          ticks: { callback: v => '$' + (v / 1000) + 'k' }
+        },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // User Growth Chart
+  new Chart(document.getElementById('growthChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      datasets: [{
+        label: 'New Users',
+        data: [180, 224, 196, 265, 312, 289],
+        backgroundColor: '#c9a45c',
+        hoverBackgroundColor: '#5a3c78',
+        borderRadius: 8,
+        maxBarThickness: 28
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#5a3c78',
+          padding: 12,
+          cornerRadius: 8,
+          callbacks: {
+            label: ctx => '  New Users: ' + ctx.parsed.y
+          }
+        }
+      },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#ece1fb' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>

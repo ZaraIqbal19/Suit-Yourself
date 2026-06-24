@@ -1,0 +1,142 @@
+/* ============================================================
+   RESPONSIVE — Admin Dashboard
+   ============================================================ */
+
+/* ── Tablet (≤ 992px) ─────────────────────────────────────── */
+@media (max-width: 992px) {
+
+    /* Sidebar: hide off-screen by default, slide in on open */
+    #sidebar {
+        transform: translateX(-100%);
+        width: var(--sidebar-width) !important; /* always full width on mobile */
+        box-shadow: none;
+    }
+
+    #sidebar.mobile-open {
+        transform: translateX(0);
+        box-shadow: var(--sidebar-shadow);
+    }
+
+    /* Overlay visible on mobile */
+    #sidebar-overlay {
+        display: block;
+    }
+
+    /* Main content fills full width */
+    #main-content {
+        margin-left: 0 !important;
+    }
+
+    /* Navbar */
+    #top-navbar {
+        padding: 0 16px;
+        gap: 10px;
+    }
+
+    .navbar-search {
+        max-width: 220px;
+    }
+
+    .profile-info {
+        display: none;
+    }
+
+    .profile-chevron {
+        display: none;
+    }
+
+    .profile-btn {
+        padding: 5px;
+        border-radius: 50%;
+        border-color: transparent;
+    }
+
+    .profile-btn:hover {
+        border-color: var(--purple-300);
+    }
+
+    /* Page content */
+    .page-content {
+        padding: 20px 16px;
+    }
+
+    /* Footer */
+    #main-footer {
+        padding: 16px;
+    }
+
+    .footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .footer-version {
+        order: -1;
+    }
+}
+
+/* ── Mobile (≤ 576px) ─────────────────────────────────────── */
+@media (max-width: 576px) {
+
+    #top-navbar {
+        padding: 0 12px;
+        gap: 8px;
+    }
+
+    .navbar-search {
+        max-width: none;
+        flex: 1;
+    }
+
+    .navbar-search input {
+        font-size: 13px;
+    }
+
+    /* Hide notifications text */
+    .notif-dropdown {
+        min-width: calc(100vw - 24px);
+        left: 12px !important;
+        right: 12px !important;
+        transform: none !important;
+    }
+
+    .page-content {
+        padding: 16px 12px;
+    }
+
+    .footer-links {
+        gap: 0;
+    }
+
+    .footer-links a {
+        padding: 4px 7px;
+        font-size: 12px;
+    }
+
+    .footer-copyright {
+        font-size: 12px;
+    }
+}
+
+/* ── Large screens (≥ 1400px) ────────────────────────────── */
+@media (min-width: 1400px) {
+    .page-content {
+        padding: 32px 36px;
+    }
+}
+
+/* ── Reduce motion ────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    #sidebar,
+    #main-content,
+    .sidebar-nav .nav-link,
+    .navbar-icon-btn,
+    .profile-btn,
+    .sidebar-brand-text,
+    .sidebar-nav .nav-link .nav-label,
+    .sidebar-nav .nav-link .nav-badge,
+    #sidebar-overlay {
+        transition: none !important;
+    }
+}
