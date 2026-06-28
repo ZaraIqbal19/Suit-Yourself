@@ -1,0 +1,94 @@
+/* ============================================================
+   FOOTER — Admin Dashboard
+   ============================================================ */
+
+#main-footer {
+    background: var(--white);
+    border-top: 1px solid var(--gray-200);
+    padding: 18px 28px;
+    margin-top: auto;
+}
+
+.footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+/* ── Copyright ────────────────────────────────────────────── */
+.footer-copyright {
+    font-size: 13px;
+    color: var(--gray-600);
+}
+
+.footer-copyright strong {
+    color: var(--purple-700);
+    font-weight: 700;
+}
+
+/* ── Links ────────────────────────────────────────────────── */
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.footer-links a {
+    font-size: 13px;
+    color: var(--gray-600);
+    text-decoration: none;
+    padding: 4px 9px;
+    border-radius: 6px;
+    transition: color 0.18s ease, background 0.18s ease;
+    white-space: nowrap;
+}
+
+.footer-links a:hover {
+    color: var(--purple-600);
+    background: var(--purple-50);
+}
+
+.footer-links .link-sep {
+    color: var(--gray-400);
+    font-size: 12px;
+    user-select: none;
+    padding: 0 2px;
+}
+
+/* ── Version Badge ────────────────────────────────────────── */
+.footer-version {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.footer-version .version-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--purple-600);
+    background: var(--purple-100);
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.2px;
+}
+
+.footer-version .status-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11.5px;
+    color: var(--gray-500);
+}
+
+.footer-version .status-dot::before {
+    content: '';
+    display: block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.20);
+}
